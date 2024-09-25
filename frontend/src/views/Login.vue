@@ -25,12 +25,17 @@
         />
         <a href="#" @click.prevent="forgotPassword">Forgot Password?</a>
       </div>
+
+      <!-- Display error message -->
+      <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
 </template>
 
 <script>
+import axios from 'axios'; // Import axios for HTTP requests
 import Cookies from "js-cookie"; // Import js-cookie to manage cookies
 import { mapActions } from "vuex";
 
@@ -39,22 +44,36 @@ export default {
     return {
       username: "",
       password: "",
+      errorMessage: "", // To store error messages from the backend
     };
   },
   methods: {
     ...mapActions(["login"]),
-    submitForm() {
-      // Simulate a role fetched from the backend after login
-      const fetchedRole = "Manager"; // This would come from your backend API in a real scenario
+    async submitForm() {
+      try {
+        // Send login request to the backend
+        const response = await axios.post("/api/login", {
+          username: this.username,
+          password: this.password,
+        });
 
-      // Store the role in Vuex state
-      this.login({ role: fetchedRole });
+        // On success, store role and redirect
+        const fetchedRole = response.data.role;
+        this.login({ role: fetchedRole });
+        Cookies.set("userRole", fetchedRole, { expires: 7 });
 
-      // Set a cookie for the role, which expires in 7 days
-      Cookies.set("userRole", fetchedRole, { expires: 7 });
+        this.$router.push("/homepage"); // Redirect to homepage
 
-      alert(`Login successful for ${this.username}`);
-      this.$router.push("/homepage"); // Redirect after login
+      } catch (error) {
+        // Set the error message based on backend response
+        if (error.response && error.response.status === 404) {
+          this.errorMessage = "User not found";
+        } else if (error.response && error.response.status === 401) {
+          this.errorMessage = "Incorrect password";
+        } else {
+          this.errorMessage = "An unexpected error occurred. Please try again.";
+        }
+      }
     },
     forgotPassword() {
       if (this.username) {

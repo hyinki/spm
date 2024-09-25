@@ -38,13 +38,17 @@ def login_route():
 
         # Create an instance of Login to check user credentials
         login1 = Login()
-        if login1.check_user_password(user_id, input_password):
+        login_result = login1.check_user_password(user_id, input_password)
+        
+        if login_result == "Login successful":
             user = User()
-            user.id = user_id  # or get the user ID from the Employees model if necessary
+            user.id = user_id  # Use user_id or any other identifier you store
             login_user(user)  # Log in the user
-            return redirect(url_for('homepage'))  # Redirect to the employees page
+            return redirect(url_for('homepage'))  # Redirect to the homepage after successful login
         else:
-            return render_template("Login.html", error="Invalid credentials")  # Show an error if login fails
+            # Return the error message to the login page
+            return render_template("Login.html", error=login_result)
+    
     return render_template("Login.html")  # Display the login form
 
 # Logout route
