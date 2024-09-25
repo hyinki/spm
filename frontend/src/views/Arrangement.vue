@@ -40,22 +40,27 @@
     <table class="table table-bordered">
       <thead>
         <tr>
+          <th>Select</th>
           <th>Name</th>
           <th>Date of Arrangement</th>
-          <th>Approve/Reject</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="request in pendingRequests" :key="request.id">
+          <td>
+            <input type="checkbox" v-model="selectedRequests" :value="request.id" />
+          </td>
           <td>{{ request.name }}</td>
           <td>{{ formatDate(request.date) }}</td>
-          <td>
-            <button class="btn btn-success" @click="approveRequest(request)">Approve</button>
-            <button class="btn btn-danger" @click="rejectRequest(request)">Reject</button>
-          </td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Approve and Reject Buttons for Selected Requests -->
+  <div class="mt-3">
+    <button class="btn btn-success" @click="approveSelected">Approve Selected</button>
+    <button class="btn btn-danger" @click="rejectSelected">Reject Selected</button>
   </div>
 </template>
 
@@ -64,26 +69,23 @@ export default {
   name: "Arrangement",
   data() {
     return {
-      // Simulate static data (pending requests)
+      // Static pending requests data for now
       pendingRequests: [
         { id: 1, name: 'James Teo', date: '2024-03-02' },
         { id: 2, name: 'Mary Tan', date: '2024-04-05' },
         { id: 3, name: 'Sean Goh', date: '2024-11-15' }
-      ]
+      ],
+      selectedRequests: []  // Store selected requests for approval/rejection
     };
   },
   methods: {
-    // Approve request action (to be integrated with backend later)
-    approveRequest(request) {
-      console.log(`Approved request from ${request.name}`);
-      // Placeholder for future API call
-      // axios.post('/api/approve', { id: request.id }).then(...)
+    // Approve selected requests
+    approveSelected() {
+      console.log(`Approved selected requests: ${this.selectedRequests}`);
     },
-    // Reject request action (to be integrated with backend later)
-    rejectRequest(request) {
-      console.log(`Rejected request from ${request.name}`);
-      // Placeholder for future API call
-      // axios.post('/api/reject', { id: request.id }).then(...)
+    // Reject selected requests
+    rejectSelected() {
+      console.log(`Rejected selected requests: ${this.selectedRequests}`);
     },
     // Format date to a readable format
     formatDate(dateStr) {
