@@ -4,33 +4,48 @@
     <form @submit.prevent="submitForm" class="mt-3">
       <div class="mb-3">
         <label for="username" class="form-label">Username</label>
+        <label for="username" class="form-label">Username</label>
         <input
           type="text"
           id="username"
           v-model="username"
+          id="username"
+          v-model="username"
           class="form-control"
+          placeholder="Enter your username"
           placeholder="Enter your username"
           required
         />
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
+        <label for="password" class="form-label">Password</label>
         <input
+          type="password"
+          id="password"
+          v-model="password"
           type="password"
           id="password"
           v-model="password"
           class="form-control"
           placeholder="Enter your password"
+          placeholder="Enter your password"
           required
         />
         <a href="#" @click.prevent="forgotPassword">Forgot Password?</a>
+        <a href="#" @click.prevent="forgotPassword">Forgot Password?</a>
       </div>
+
+      <!-- Display error message -->
+      <div v-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
 </template>
 
 <script>
+import axios from 'axios'; // Import axios for HTTP requests
 import Cookies from "js-cookie"; // Import js-cookie to manage cookies
 import { mapActions } from "vuex";
 
@@ -39,22 +54,36 @@ export default {
     return {
       username: "",
       password: "",
+      errorMessage: "", // To store error messages from the backend
     };
   },
   methods: {
     ...mapActions(["login"]),
-    submitForm() {
-      // Simulate a role fetched from the backend after login
-      const fetchedRole = "Manager"; // This would come from your backend API in a real scenario
+    async submitForm() {
+      try {
+        // Send login request to the backend
+        const response = await axios.post("/api/login", {
+          username: this.username,
+          password: this.password,
+        });
 
-      // Store the role in Vuex state
-      this.login({ role: fetchedRole });
+        // On success, store role and redirect
+        const fetchedRole = response.data.role;
+        this.login({ role: fetchedRole });
+        Cookies.set("userRole", fetchedRole, { expires: 7 });
 
-      // Set a cookie for the role, which expires in 7 days
-      Cookies.set("userRole", fetchedRole, { expires: 7 });
+        this.$router.push("/homepage"); // Redirect to homepage
 
-      alert(`Login successful for ${this.username}`);
-      this.$router.push("/homepage"); // Redirect after login
+      } catch (error) {
+        // Set the error message based on backend response
+        if (error.response && error.response.status === 404) {
+          this.errorMessage = "User not found";
+        } else if (error.response && error.response.status === 401) {
+          this.errorMessage = "Incorrect password";
+        } else {
+          this.errorMessage = "An unexpected error occurred. Please try again.";
+        }
+      }
     },
     forgotPassword() {
       if (this.username) {
