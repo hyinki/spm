@@ -2,16 +2,16 @@
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">PlanPro</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
+      <a class="navbar-brand" href="/homepage">PlanPro</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -26,6 +26,22 @@
             <a class="nav-link" href="/arrangement">Approve/Reject Arrangement</a>
           </li>
         </ul>
+
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <span class="nav-link">
+                <img
+                  :src="accountIcon"
+                  alt="Account"
+                  style="width: 20px; margin-right: 5px"
+                />
+                Hello, {{ userRole }}
+              </span>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-primary" @click="logout">Logout</button>
+            </li>
+          </ul>
       </div>
     </div>
   </nav>

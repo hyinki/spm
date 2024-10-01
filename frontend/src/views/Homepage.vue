@@ -3,7 +3,7 @@
   <div v-if="isStaff">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">PlanPro</a>
+        <a class="navbar-brand" href="/homepage">PlanPro</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -32,6 +32,25 @@
               <a class="nav-link" href="/applyforarrangement"
                 >Apply For Arrangement</a
               >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/viewarrangement">View Arrangement</a>
+            </li>
+          </ul>
+          <!-- Account Section -->
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <span class="nav-link">
+                <img
+                  :src="accountIcon"
+                  alt="Account"
+                  style="width: 20px; margin-right: 5px"
+                />
+                Hello, {{ userRole }}
+              </span>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-primary" @click="logout">Logout</button>
             </li>
           </ul>
         </div>
@@ -71,7 +90,7 @@
   <div v-if="isManager">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">PlanPro</a>
+        <a class="navbar-brand" href="/homepage">PlanPro</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -102,6 +121,24 @@
               >
             </li>
           </ul>
+
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <span class="nav-link">
+                <img
+                  :src="accountIcon"
+                  alt="Account"
+                  style="width: 20px; margin-right: 5px"
+                />
+                Hello, {{ userRole }}
+              </span>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-primary" @click="logout">Logout</button>
+            </li>
+          </ul>
+
+
         </div>
       </div>
     </nav>
@@ -131,7 +168,7 @@
   <div v-if="isHR">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">PlanPro</a>
+        <a class="navbar-brand" href="/homepage">PlanPro</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -161,20 +198,32 @@
                 >View Team Schedule</a
               >
             </li>
+          </ul>
 
-           
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <span class="nav-link">
+                <img
+                  :src="accountIcon"
+                  alt="Account"
+                  style="width: 20px; margin-right: 5px"
+                />
+                Hello, {{ userRole }}
+              </span>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-primary" @click="logout">Logout</button>
+            </li>
           </ul>
         </div>
       </div>
     </nav>
-
 
     <div>
       <h1>Welcome to the HomePage (HR)</h1>
     </div>
 
     <div>
-      
       <router-link to="/viewteamschedule">
         <button type="button" class="btn btn-primary btn-lg m-5">
           View Team Schedule
@@ -194,9 +243,17 @@
 
 <script>
 import { mapGetters } from "vuex";
+import accountIcon from "@/assets/account.png"; // Import the account icon
+import Cookies from "js-cookie"; // Import js-cookie to manage cookies
+import axios from "axios"; // Import axios for API requests
 
 export default {
   name: "Homepage",
+  data() {
+    return {
+      accountIcon: accountIcon, // Make the imported icon available to the template
+    };
+  },
   computed: {
     ...mapGetters(["userRole"]), // Access the user's role from Vuex
     isStaff() {
@@ -207,6 +264,22 @@ export default {
     },
     isHR() {
       return this.userRole === "HR"; // Only true if the user's role is 'HR'
+    },
+  },
+  methods: {
+    async logout() {
+      try {
+        await axios.post(
+          "http://localhost:5000/logout",
+          {},
+          { withCredentials: true }
+        ); // Make POST request to logout
+        Cookies.remove("Staff_ID");
+        Cookies.remove("userRole");
+        this.$router.push("/login"); // Redirect to the login page after logout
+      } catch (error) {
+        console.error("Logout failed:", error); // Handle any errors that occur during logout
+      }
     },
   },
 };

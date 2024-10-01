@@ -6,6 +6,7 @@ from Classes.Employees import Employees
 from Classes.Wfh_Request import WFHRequests
 from Classes.Login import Login
 from werkzeug.security import check_password_hash
+from sqlalchemy import text
 import os
 from datetime import timedelta
 
@@ -97,11 +98,18 @@ def login_route():
         return jsonify({"status": "failure", "message": "Invalid credentials"}), 401
 
 # Logout route
-@app.route("/logout")
-@login_required
+# @app.route("/logout")
+# @login_required
+# def logout():
+#     logout_user()  # Log out the user
+#     return redirect(url_for('login_route'))  # Redirect to login page
+
+@app.route("/logout", methods=['POST'])
+# @login_required
 def logout():
     logout_user()  # Log out the user
-    return redirect(url_for('login_route'))  # Redirect to login page
+    session.clear()  # Clear the session data
+    return jsonify({"status": "success", "message": "Logged out successfully"}), 200
 
 @app.route("/homepage")
 @login_required
@@ -168,66 +176,88 @@ def wfh_request():
 #         print(f"Error: {e}")  # Log the error
 #         return redirect(url_for('failure'))  # Redirect to the failure page
 
+# def submit_wfh_request():
+#     """Submit a new WFH request to the database."""
+#     data = request.get_json()  # Receive JSON data from the frontend
+#     print(data)
+
+#     # Assuming 'day_of_week' represents a specific day or a range
+#     # Here you might want to set the selected_date and day_of_week accordingly
+#     selected_date = data.get('start_date')  # You can use start_date as selected_date
+#     day_of_week = data.get('monday')  # Assuming you are determining the day of the week based on input
+
+#     requester_id = data.get('requester_id')
+#     requester_supervisor = data.get('requester_supervisor')
+#     request_status = data.get('request_status')
+
+#     # Create a new WFH request instance
+#     new_request = WFHRequests(
+#         Requester_ID=requester_id,
+#         Requester_Supervisor=requester_supervisor,
+#         Request_Status=request_status,
+#         selected_date=selected_date,  # Use the start_date as selected_date
+#         day_of_week=day_of_week  # Store only one day's info; modify this if necessary
+#     )
+
+#     try:
+#         # Add the new request to the session and commit it to the database
+#         db.session.add(new_request)
+#         db.session.commit()
+#         return jsonify({"status": "success", "message": "Request submitted successfully"}), 200
+#     except Exception as e:
+#         print(f"Error: {e}")  # Log the error
+#         return jsonify({"status": "failure", "message": "Request submission failed"}), 500
+
 @app.route("/submit_wfh_request", methods=["POST"])
-<<<<<<< Updated upstream
 def submit_wfh_request():
     """Submit a new WFH request to the database."""
-    selected_date = request.form['selected_date']
-    day_of_week = request.form['day_of_week']
-    requester_id = request.form['requester_id']
-    requester_supervisor = request.form['requester_supervisor']
-    request_status = request.form['request_status']
-=======
-# @login_required
-def submit_wfh_request():
-    """Submit a new WFH request to the database."""
-    data = request.get_json()  # Receive JSON data from the frontend
-
-    start_date = data.get('start_date')
-    end_date = data.get('end_date')
-    monday = data.get('monday')
-    tuesday = data.get('tuesday')
-    wednesday = data.get('wednesday')
-    thursday = data.get('thursday')
-    friday = data.get('friday')
-    saturday = data.get('saturday')
-    sunday = data.get('sunday')
-    requester_id = data.get('requester_id')
-    requester_supervisor = data.get('requester_supervisor')
-    request_status = data.get('request_status')
->>>>>>> Stashed changes
-
-    # Create a new WFH request instance
-    new_request = WFHRequests(
-        selected_date=selected_date,
-        day_of_week=day_of_week,
-        Requester_ID=requester_id,
-        Requester_Supervisor=requester_supervisor,
-<<<<<<< Updated upstream
-        Request_Status=request_status
-=======
-        Request_Status=request_status,
-        start_date=start_date,
-        end_date=end_date,
-        Monday=monday,
-        Tuesday=tuesday,
-        Wednesday=wednesday,
-        Thursday=thursday,
-        Friday=friday,
-        Saturday=saturday,
-        Sunday=sunday
->>>>>>> Stashed changes
-    )
-
     try:
+        # Receive JSON data from the frontend
+        data = request.get_json()
+        print(f"Received data: {data}") 
+        
+        # Extract data from the JSON payload
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        monday = data.get('monday')
+        tuesday = data.get('tuesday')
+        wednesday = data.get('wednesday')
+        thursday = data.get('thursday')
+        friday = data.get('friday')
+        saturday = data.get('saturday')
+        sunday = data.get('sunday')
+        requester_id = data.get('requester_id')
+        requester_supervisor = data.get('requester_supervisor')
+        request_status = data.get('request_status')
+        
+        # Create a new WFH request instance
+        new_request = WFHRequests(
+            Requester_ID=requester_id,
+            Requester_Supervisor=requester_supervisor,
+            Request_Status=request_status,
+            start_date=start_date,
+            end_date=end_date,
+            Monday=monday,
+            Tuesday=tuesday,
+            Wednesday=wednesday,
+            Thursday=thursday,
+            Friday=friday,
+            Saturday=saturday,
+            Sunday=sunday
+        )
+
         # Add the new request to the session and commit it to the database
         db.session.add(new_request)
         db.session.commit()
-        return jsonify({"status": "success", "message": "Request submitted successfully"}), 200
-    except Exception as e:
-        print(f"Error: {e}")  # Log the error
-        return jsonify({"status": "failure", "message": "Request submission failed"}), 500
 
+        # Return success response as JSON
+        return jsonify({"status": "success", "message": "Request submitted successfully"}), 200
+
+    except Exception as e:
+        # Log the error and return failure response
+        print(f"Error during request submission: {e}")
+        return jsonify({"status": "failure", "message": f"Request submission failed: {str(e)}"}), 500
+    
 @app.route("/wfh_viewer")
 def retrieve_wfh():
     """Retrieve and display all wfh."""
@@ -254,10 +284,7 @@ def update_wfh_request(request_id):
             return redirect(url_for('failure'))  # Redirect to the failure page if update fails
 
     return render_template('update_wfh_request.html', wfh_request=wfh_request)
-
-
-<<<<<<< Updated upstream
-=======
+ 
 #Note, this function most likely can delete, with the homepage button reroute to manager view, was trialling some session based logic for handling data.
 #Might try to integrate a function where if session["managecount"] == 0 redirect back to homepage since no need to approve anything.
 @app.route("/manager_view_processing")
@@ -283,10 +310,12 @@ def managerview():
 #     sql = text("Select * from WFH_requests where Requester_ID = " + str(session['employee_id']))
 #     sqldonepog = db.session.execute(sql)
 #     return render_template('viewownrequests.html', ownreq = sqldonepog)
+
 @app.route("/viewownrequests", methods=['GET'])
 def viewownrequests():
     # Retrieve employee_id from cookies
     employee_id = request.cookies.get('Staff_ID')
+    print(employee_id)
 
     # Check if 'Staff_ID' exists in the cookies
     if not employee_id:
@@ -308,7 +337,6 @@ def managerview_active():
     sql = text("Select * from WFH_requests where Requester_Supervisor = " + str(session['employee_id']) + " AND Request_Status = 'Approved'")
     sql_processed = db.session.execute(sql)  
     return render_template('managerview_active.html', active=sql_processed)
->>>>>>> Stashed changes
 
 
 if __name__ == '__main__':

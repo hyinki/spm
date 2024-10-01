@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import store from '../store/store';// Import your Vuex store
 import Home from '../views/Home.vue';  // Import from views
 import Login from '../views/Login.vue';
 import Homepage from '../views/Homepage.vue';
@@ -35,27 +36,32 @@ const routes = [
   {
     path: '/viewownschedule',
     name: 'ViewOwnSchedule',
-    component: ViewOwnSchedule
+    component: ViewOwnSchedule,
+    meta: { role: 'Staff' } 
   },
   {
     path: '/applyforarrangement',
     name: 'ApplyForArrangement',
-    component: ApplyForArrangement
+    component: ApplyForArrangement,
+    meta: { role: 'Staff' } 
   },
   {
-    path: '/Arrangement',
+    path: '/arrangement',
     name: 'Arrangement',
-    component: Arrangement
+    component: Arrangement,
+    meta: { role: 'Manager' } 
   },
   {
     path: '/viewoverallschedule',
     name: 'ViewOverallSchedule',
-    component: ViewOverallSchedule
+    component: ViewOverallSchedule,
+    meta: { role: 'HR' } 
   },
   {
     path: '/viewarrangement',
     name: 'ViewArrangement',
-    component: ViewArrangement
+    component: ViewArrangement,
+    meta: { role: 'Staff' } 
   }
 ];
 
@@ -63,5 +69,19 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 });
+
+// Navigation guard
+router.beforeEach((to, from, next) => {
+  const userRole = store.getters.userRole; // Get the user role from Vuex
+
+  // Check if the route requires a specific role
+  if (to.meta.role && to.meta.role !== userRole) {
+    alert('Access Denied: You do not have permission to access this page.');
+    next({ path: '/login' }); // Redirect to home page or another route
+  } else {
+    next(); // Allow access
+  }
+});
+
 
 export default router;
