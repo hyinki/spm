@@ -32,7 +32,10 @@
 
 <script>
 import Cookies from "js-cookie"; // Import js-cookie to manage cookies
+import axios from 'axios';  // Import axios for API requests
 import { mapActions } from "vuex";
+import Toastify from 'toastify-js';  // Import Toastify for notifications
+import "toastify-js/src/toastify.css";  // Import Toastify CSS
 
 export default {
   data() {
@@ -43,24 +46,86 @@ export default {
   },
   methods: {
     ...mapActions(["login"]),
-    submitForm() {
-      // Simulate a role fetched from the backend after login
-      const fetchedRole = "Manager"; // This would come from your backend API in a real scenario
+    async submitForm() {
+      try {
+        const response = await axios.post('http://localhost:5000/login', {
+          user_ID: this.username,
+          password: this.password
+        });
 
-      // Store the role in Vuex state
-      this.login({ role: fetchedRole });
+        // Handle successful login
+        if (response.data.status === "success") {
+          console.log(response.data)
+          const fetchedRole = response.data.role;
+          const Staff_ID = response.data.staffId; 
+          const supervisor = response.data.supervisor; 
 
-      // Set a cookie for the role, which expires in 7 days
-      Cookies.set("userRole", fetchedRole, { expires: 7 });
+          console.log(Staff_ID)
 
-      alert(`Login successful for ${this.username}`);
-      this.$router.push("/homepage"); // Redirect after login
+          // Store the role in Vuex state
+          this.login({ role: fetchedRole });
+
+          // Set a cookie for the role, which expires in 7 days
+          Cookies.set("userRole", fetchedRole, { expires: 7 });
+          Cookies.set("Staff_ID", Staff_ID, { expires: 7 }); 
+          Cookies.set("supervisor", supervisor, { expires: 7 }); 
+
+
+          // Display success toast
+          Toastify({
+            text: `Login successful for ${this.username}`,
+            duration: 3000,  // Toast duration in milliseconds
+            close: true,     // Show close button
+            gravity: "top",  // Position of toast
+            position: "center", // Center horizontally
+            backgroundColor: "#4caf50",  // Green for success
+          }).showToast();
+
+          this.$router.push("/homepage"); // Redirect after login
+        } else {
+          // Display error toast
+          Toastify({
+            text: `Login failed: ${response.data.message}`,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "#f44336",  // Red for failure
+          }).showToast();
+        }
+      } catch (error) {
+        // Display error toast for request failure
+        Toastify({
+          text: `An error occurred: wrong username or password.`,
+          duration: 3000,
+          close: true,
+          gravity: "top",
+          position: "center",
+          backgroundColor: "#f44336",  // Red for failure
+        }).showToast();
+      }
     },
     forgotPassword() {
       if (this.username) {
-        alert(`Password reset link has been sent to ${this.username}`);
+        // Display info toast
+        Toastify({
+          text: `Password reset link has been sent to ${this.username}`,
+          duration: 3000,
+          close: true,
+          gravity: "top",
+          position: "center",
+          backgroundColor: "#2196f3",  // Blue for info
+        }).showToast();
       } else {
-        alert("Please enter your username to reset your password.");
+        // Display warning toast
+        Toastify({
+          text: "Please enter your username to reset your password.",
+          duration: 3000,
+          close: true,
+          gravity: "top",
+          position: "center",
+          backgroundColor: "#ff9800",  // Orange for warning
+        }).showToast();
       }
     },
   },

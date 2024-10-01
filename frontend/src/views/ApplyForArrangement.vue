@@ -1,5 +1,5 @@
 <template>
-   <nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">PlanPro</a>
       <button
@@ -27,146 +27,153 @@
           <li class="nav-item">
             <a class="nav-link" href="/applyforarrangement">Apply For Arrangement</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/viewarrangement">ViewArrangement</a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
-  
-    <div>
-      <h1>Welcome to apply for arrangement</h1>
-    </div>
 
-    
+  <div>
+    <h1>Apply for arrangement</h1>
+  </div>
 
-    <div class="container">
-    <!-- Date and Timeslot Picker -->
+  <div class="container">
+    <!-- Date Picker -->
     <div class="row mb-4">
       <div class="col">
-        <label for="datePicker">Which day are you applying for arrangement?</label>
-        <input type="date" id="datePicker" v-model="selectedDate" class="form-control" />
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate" v-model="startDate" class="form-control" />
+      </div>
+      <div class="col">
+        <label for="endDate">End Date</label>
+        <input type="date" id="endDate" v-model="endDate" class="form-control" />
       </div>
     </div>
 
-    <!-- Timeslot Selection -->
+    <!-- Requester Information -->
     <div class="row mb-4">
       <div class="col">
-        <label for="timeslotSelect">Timeslot</label>
-        <div class="btn-group d-block" role="group">
-          <button
-            type="button"
-            class="btn"
-            :class="selectedTimeslot === 'AM' ? 'btn-primary' : 'btn-outline-primary'"
-            @click="selectTimeslot('AM')"
-          >
-            AM (9AM - 1PM)
-          </button>
-          <button
-            type="button"
-            class="btn"
-            :class="selectedTimeslot === 'PM' ? 'btn-primary' : 'btn-outline-primary'"
-            @click="selectTimeslot('PM')"
-          >
-            PM (2PM - 6PM)
-          </button>
-          <button
-            type="button"
-            class="btn"
-            :class="selectedTimeslot === 'Full day' ? 'btn-primary' : 'btn-outline-primary'"
-            @click="selectTimeslot('Full day')"
-          >
-            Full day (9AM - 6PM)
-          </button>
-        </div>
+        <label for="requesterId">Requester ID:</label>
+        <input type="text" id="requesterId" v-model="requesterId" class="form-control" />
+      </div>
+      <div class="col">
+        <label for="requesterSupervisor">Requester Supervisor:</label>
+        <input type="text" id="requesterSupervisor" v-model="requesterSupervisor" class="form-control" />
+      </div>
+    </div>
+
+    <!-- Request Status -->
+    <div class="row mb-4">
+      <div class="col">
+        <label for="requestStatus">Request Status:</label>
+        <select id="requestStatus" v-model="requestStatus" class="form-select">
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Denied">Denied</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Weekly Schedule Dropdowns -->
+    <div class="row mb-4" v-for="(day, index) in weekdays" :key="index">
+      <div class="col">
+        <label :for="day">{{ day }}:</label>
+        <select :id="day" v-model="schedule[day]" class="form-select">
+          <option value="NULL">NULL</option>
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+          <option value="Whole Day">Whole Day</option>
+        </select>
       </div>
     </div>
 
     <!-- Submit Button -->
     <div class="row mb-4">
       <div class="col">
-        <button class="btn btn-primary" @click="submitArrangement">Submit</button>
+        <button class="btn btn-primary" @click="submitRequest">Submit Request</button>
       </div>
     </div>
 
-    <!-- Arrangements Table -->
-    <div class="row">
-      <div class="col">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Timeslot</th>
-              <th>Approved</th>
-              <th>Cancel</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(arrangement, index) in arrangements" :key="index">
-              <td>{{ formatDate(arrangement.date) }}</td>
-              <td>{{ arrangement.timeslot }}</td>
-              <td>{{ arrangement.approved ? 'Yes' : 'No' }}</td>
-              <td>
-                <button class="btn btn-danger" @click="cancelArrangement(index)">Cancel</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    
   </div>
-  
-   
-  
-  </template>
-  
-  <script>
-  
-  export default {
-    name: "ApplyForArrangement",
-    data() {
+</template>
+
+<script>
+import axios from 'axios';  // Or use fetch API
+import Cookies from "js-cookie";
+
+export default {
+  name: "ApplyForArrangement",
+  data() {
     return {
-      selectedDate: null, // To hold the selected date
-      selectedTimeslot: '', // To hold the selected timeslot
-      arrangements: [], // To store the arrangements
+      startDate: null,
+      endDate: null,
+      requesterId: Cookies.get("Staff_ID") || 'DEFAULT_VALUE',
+      requesterSupervisor: Cookies.get("supervisor") || 'DEFAULT_VALUE',
+      requestStatus: 'Pending',
+      weekdays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      schedule: {
+        Monday: 'NULL',
+        Tuesday: 'NULL',
+        Wednesday: 'NULL',
+        Thursday: 'NULL',
+        Friday: 'NULL',
+        Saturday: 'NULL',
+        Sunday: 'NULL',
+      },
+      arrangements: [],
     };
   },
   methods: {
-    // Method to select the timeslot
-    selectTimeslot(timeslot) {
-      this.selectedTimeslot = timeslot;
-    },
-    
-    // Method to submit the arrangement
-    submitArrangement() {
-      if (this.selectedDate && this.selectedTimeslot) {
-        this.arrangements.push({
-          date: this.selectedDate,
-          timeslot: this.selectedTimeslot,
-          approved: Math.random() > 0.5, // Randomly approve or deny for demo purposes
+    // Method to submit the request
+    async submitRequest() {
+      try {
+        const response = await axios.post('http://localhost:5000/submit_wfh_request', {
+          start_date: this.startDate,
+          end_date: this.endDate,
+          monday: this.schedule.Monday,
+          tuesday: this.schedule.Tuesday,
+          wednesday: this.schedule.Wednesday,
+          thursday: this.schedule.Thursday,
+          friday: this.schedule.Friday,
+          saturday: this.schedule.Saturday,
+          sunday: this.schedule.Sunday,
+          requester_id: this.requesterId,
+          requester_supervisor: this.requesterSupervisor,
+          request_status: this.requestStatus
         });
-        this.resetForm();
-      } else {
-        alert('Please select a date and timeslot');
+
+        if (response.data.status === "success") {
+          alert("Request submitted successfully!");
+          this.resetForm();
+        } else {
+          alert("Request submission failed.");
+        }
+      } catch (error) {
+        console.error("There was an error submitting the request:", error);
+        alert("Error submitting request.");
       }
     },
 
-    // Method to cancel an arrangement
-    cancelArrangement(index) {
-      this.arrangements.splice(index, 1);
-    },
-
-    // Reset form inputs after submission
+    // Reset the form
     resetForm() {
-      this.selectedDate = null;
-      this.selectedTimeslot = '';
-    },
-
-    // Format date for display
-    formatDate(date) {
-      const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-      return new Date(date).toLocaleDateString('en-US', options);
-    },
+      this.startDate = null;
+      this.endDate = null;
+      this.schedule = {
+        Monday: 'NULL',
+        Tuesday: 'NULL',
+        Wednesday: 'NULL',
+        Thursday: 'NULL',
+        Friday: 'NULL',
+        Saturday: 'NULL',
+        Sunday: 'NULL',
+      };
+      this.requesterId = '151543';
+      this.requesterSupervisor = '151408';
+      this.requestStatus = 'Pending';
+    }
   },
 };
-
-  </script>
-  
+</script>

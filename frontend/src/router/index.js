@@ -7,6 +7,7 @@ import ViewOwnSchedule from '../views/ViewOwnSchedule.vue';
 import ApplyForArrangement from '../views/ApplyForArrangement.vue';
 import Arrangement from '../views/Arrangement.vue';
 import ViewOverallSchedule from '../views/ViewOverallSchedule.vue';
+import ViewArrangement from '../views/ViewArrangement.vue';
 
 
 
@@ -50,6 +51,11 @@ const routes = [
     path: '/viewoverallschedule',
     name: 'ViewOverallSchedule',
     component: ViewOverallSchedule
+  },
+  {
+    path: '/viewarrangement',
+    name: 'ViewArrangement',
+    component: ViewArrangement
   }
 ];
 
