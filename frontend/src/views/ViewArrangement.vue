@@ -115,7 +115,7 @@ import axios from "axios"; // Import axios for API requests
         accountIcon: accountIcon
       };
     },
-    conputed:{
+    computed:{
       ...mapGetters(["userRole"]), 
     },
     methods: {

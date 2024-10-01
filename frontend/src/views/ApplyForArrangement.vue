@@ -155,8 +155,8 @@ export default {
       arrangements: [],
     };
   },
-  conputed:{
-    ...mapGetters(["userRole"]), // Access the user's role from Vuex
+  computed:{
+    ...mapGetters(["userRole"]) // Access the user's role from Vuex
 
   },
   methods: {
